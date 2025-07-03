@@ -321,7 +321,7 @@ app.post("/video-previewV2", async (req, res) => {
 
             // Construct and execute the merge command.
             const mergeCommand = `ffmpeg -y ${inputsCommand} -filter_complex "${filterComplex}" -map "[out]" ` +
-                `-c:v libx264 -pix_fmt yuv420p "${mergedVideoPath}"`;
+                `-c:v libx264 -preset ultrafast -pix_fmt yuv420p "${mergedVideoPath}"`;
             console.log("Merge command:", mergeCommand);
             await runCommand(mergeCommand);
         }
