@@ -11,6 +11,22 @@ const fs = require('fs');
 
 const app = express();
 
+// Ensure required folders exist on startup
+const requiredDirs = [
+  path.join(__dirname, "shared_media"),
+  path.join(__dirname, "shared_videos"),
+  path.join(__dirname, "public_videos"),
+  path.join(__dirname, "temp")
+];
+
+requiredDirs.forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+    console.log(`📁 Created folder: ${dir}`);
+  }
+});
+
+
 // Set up multer to store the uploaded file in memory
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
