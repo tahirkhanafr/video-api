@@ -12,7 +12,7 @@ const fs = require('fs');
 const app = express();
 
 // Ensure required folders exist on startup
-const requiredDirs = [
+const requiredDirs = [A
   path.join(__dirname, "shared_media"),
   path.join(__dirname, "shared_videos"),
   path.join(__dirname, "public_videos"),
@@ -315,16 +315,23 @@ app.post("/video-previewV2", async (req, res) => {
                 filterComplex += `[${i}:v]scale=${targetWidth}:${targetHeight}:force_original_aspect_ratio=decrease,` +
                     `pad=${targetWidth}:${targetHeight}:(ow-iw)/2:(oh-ih)/2,setsar=1[v${i}];`;
             });
-            // Concatenate all scaled clips.
-            const concatInputs = clipFiles.map((_, i) => `[v${i}]`).join("");
-            filterComplex += `${concatInputs}concat=n=${clipFiles.length}:v=1:a=0[out]`;
+            // 🧪 Check first if any clips exist before trying to merge
+if (clipFiles.length === 0) {
+    console.error("❌ No clips found to merge.");
+    return res.status(400).json({ error: "No clips were created. Check your input URLs." });
+}
 
-            // Construct and execute the merge command.
-            const mergeCommand = `ffmpeg -y ${inputsCommand} -filter_complex "${filterComplex}" -map "[out]" ` +
-                `-c:v libx264 -preset ultrafast -pix_fmt yuv420p "${mergedVideoPath}"`;
-            console.log("Merge command:", mergeCommand);
-            await runCommand(mergeCommand);
-        }
+// 🎬 Build the concat filter only if we have clips
+const concatInputs = clipFiles.map((_, i) => `[v${i}]`).join("");
+filterComplex += `${concatInputs}concat=n=${clipFiles.length}:v=1:a=0[out]`;
+
+// 🧱 Construct and execute the merge command
+const mergeCommand = `ffmpeg -y ${inputsCommand} -filter_complex "${filterComplex}" -map "[out]" ` +
+    `-c:v libx264 -preset ultrafast -pix_fmt yuv420p "${mergedVideoPath}"`;
+
+console.log("📽️ Merging video clips using the concat filter...");
+console.log("Merge command:", mergeCommand);
+await runCommand(mergeCommand);
 
 
         // Remove audio from the merged video (optional step)
